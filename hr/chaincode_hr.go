@@ -52,17 +52,21 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 }
 
 func (t *SimpleChaincode) Update(stub shim.ChaincodeStubInterface, function string, id []string) ([]byte, error) {
-	// var err error
-	var key string
+	var key, value string
+	var err error
+	fmt.Println("running write()")
 
-	if len(id) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 1")
+	if len(id) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
-	key = id[0]
 
-	valAsbytes, _ := stub.GetState(key)
-
-	return valAsbytes, nil
+	key = id[0] //rename for funsies
+	value = id[1]
+	err = stub.PutState(key, []byte(value)) //write the variable into the chaincode state
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 
@@ -75,7 +79,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.Init(stub, "Init", id)
 	}
 	if function == "Update" {													//initialize the chaincode state, used as reset
-		return t.Init(stub, "Update", id)
+		return t.Update(stub, "Update", id)
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 
@@ -95,7 +99,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	if function == "read" { //read a variable
 		return t.read(stub, id)
 	}
-	
+
 	fmt.Println("query did not find func: " + function)
 
 	return nil, errors.New("Received unknown function query: " + function)					//error
