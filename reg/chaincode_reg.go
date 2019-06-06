@@ -1,19 +1,3 @@
-/*
-Copyright IBM Corp 2016 All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-		 http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package main
 
 import (
@@ -30,7 +14,7 @@ type SimpleChaincode struct {
 
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, id []string) ([]byte, error) {
-	// var i, j int
+	//var i, j int
 
 	if len(id) != 60 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
@@ -49,24 +33,22 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	return nil, nil
 }
 
-func (t *SimpleChaincode) Update(stub shim.ChaincodeStubInterface, function string, id []string) ([]byte, error) {
-	var key, value string
-	var err error
+func (t *SimpleChaincode) update(stub shim.ChaincodeStubInterface, function string, id []string) ([]byte, error) {
+	//var i, j int
 	fmt.Println("running write()")
 
-	if len(id) != 2 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
+	for i,x:= range id {
+		a := i+2
+		if(a%2==0) {
+			err := stub.PutState(x, []byte(id[i+1]))
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	key = id[0] //rename for funsies
-	value = id[1]
-	err = stub.PutState(key, []byte(value)) //write the variable into the chaincode state
-	if err != nil {
-		return nil, err
-	}
 	return nil, nil
 }
-
 
 // Invoke is our entry point to invoke a chaincode function
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, id []string) ([]byte, error) {
@@ -76,8 +58,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	if function == "Init" {													//initialize the chaincode state, used as reset
 		return t.Init(stub, "Init", id)
 	}
-	if function == "Update" {													//initialize the chaincode state, used as reset
-		return t.Update(stub, "Update", id)
+	if function == "update" {													//initialize the chaincode state, used as reset
+		return t.update(stub, "update", id)
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 
